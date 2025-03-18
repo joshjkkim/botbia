@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐝 Botbia Web Interface</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bee-yellow: #FFC107;
+      --bee-amber: #FFB300;
+      --bee-dark: #704300;
+      --bee-light: #FFF8E1;
+      --bee-black: #212121;
+      --bee-white: #FFFFFF;
+      --bee-honey: #FFA000;
+      --bee-bg: #FFFDE7;
+      --bee-gray: #E0E0E0;
+      --bee-red: #F44336;
+      --bee-green: #4CAF50;
+    }
+    
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bee-bg);
+      color: var(--bee-dark);
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFC107' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: var(--bee-yellow);
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23000000' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+      opacity: 0.5;
+      z-index: 0;
+    }
+    
+    h1 {
+      font-size: 2.8em;
+      margin: 0;
+      color: var(--bee-dark);
+      text-shadow: 1px 1px 0 var(--bee-white);
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    h1::before {
+      content: "🐝";
+      font-size: 1.2em;
+      margin-right: 10px;
+    }
+    
+    h1::after {
+      content: "🐝";
+      font-size: 1.2em;
+      margin-left: 10px;
+    }
+    
+    .status {
+      text-align: center;
+      font-size: 16px;
+      color: var(--bee-dark);
+      background-color: var(--bee-light);
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 2px solid var(--bee-honey);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .status::before {
+      content: "🔌";
+      margin-right: 8px;
+    }
+    
+    .two-column {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+    }
+    
+    .column {
+      flex: 1 1 300px;
+    }
+    
+    .hexagon-container {
+      position: relative;
+      background-color: var(--bee-white);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      border: 2px solid var(--bee-yellow);
+      overflow-x: auto;
+      max-width: 100vw;
+      max-height: 100vh;
+    }
+    
+    .hexagon-container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--bee-yellow),
+        var(--bee-yellow) 20px,
+        var(--bee-black) 20px,
+        var(--bee-black) 40px
+      );
+      z-index: 1;
+    }
+    
+    .hexagon-container::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background-color: var(--bee-amber);
+    }
+    
+    .hexagon-title {
+      display: flex;
+      align-items: center;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: var(--bee-dark);
+      border-bottom: 2px dashed var(--bee-amber);
+      padding-bottom: 10px;
+    }
+    
+    .hexagon-title::before {
+      margin-right: 10px;
+      font-size: 1.2em;
+    }
+    
+    .task-analysis-title::before {
+      content: "🧠";
+    }
+    
+    .memory-title::before {
+      content: "📚";
+    }
+    
+    .commands-title::before {
+      content: "💡";
+    }
+    
+    .voice-title::before {
+      content: "🎤";
+    }
+    
+    .task-analysis-content, .memory-content {
+      background-color: var(--bee-light);
+      border: 1px solid var(--bee-amber);
+      border-radius: 10px;
+      padding: 15px;
+      overflow-x: auto;
+      font-size: 0.9em;
+      max-height: 300px;
+      color: var(--bee-dark);
+    }
+    
+    .chat-container {
+      background-color: var(--bee-light);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 2px solid var(--bee-honey);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFC107' fill-opacity='0.1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .chat-title {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: var(--bee-dark);
+      border-bottom: 2px dashed var(--bee-amber);
+      padding-bottom: 10px;
+    }
+    
+    .chat-title::before {
+      content: "💬";
+      margin-right: 10px;
+    }
+    
+    .message {
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+      position: relative;
+    }
+    
+    .user-message {
+      background-color: var(--bee-yellow);
+      color: var(--bee-dark);
+      margin-left: auto;
+      border-bottom-right-radius: 0;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .bot-message {
+      background-color: var(--bee-white);
+      color: var(--bee-dark);
+      border-bottom-left-radius: 0;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--bee-honey);
+    }
+    
+    .bot-message::before {
+      content: "🐝";
+      position: absolute;
+      left: -25px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .controls input {
+      flex-grow: 1;
+      padding: 12px 15px;
+      border: 2px solid var(--bee-yellow);
+      border-radius: 25px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      background-color: var(--bee-white);
+      color: var(--bee-dark);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .controls input:focus {
+      outline: none;
+      border-color: var(--bee-honey);
+      box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
+    }
+    
+    .controls button {
+      padding: 12px 25px;
+      background-color: var(--bee-yellow);
+      color: var(--bee-dark);
+      border: 2px solid var(--bee-honey);
+      border-radius: 25px;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .controls button:hover {
+      background-color: var(--bee-honey);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    .controls button:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .controls button::before {
+      content: "🐝";
+      margin-right: 8px;
+    }
+    
+    .commands-container ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    
+    .commands-container li {
+      margin-bottom: 12px;
+      padding-left: 30px;
+      position: relative;
+    }
+    
+    .commands-container li::before {
+      content: "🍯";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .commands-container li strong {
+      color: var(--bee-dark);
+      font-weight: bold;
+      background-color: var(--bee-yellow);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .memory-container details {
+      cursor: pointer;
+    }
+    
+    .memory-container summary {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1em;
+      color: var(--bee-dark);
+      padding: 8px 12px;
+      background-color: var(--bee-yellow);
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+    
+    .memory-container summary:hover {
+      background-color: var(--bee-honey);
+    }
+    
+    .hexagon-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.1;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .screenshot {
+      display: block;
+      max-width: 100%;
+      border: 5px solid var(--bee-yellow);
+      margin-top: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .screenshot-container {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    .screenshot-title {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--bee-yellow);
+      padding: 5px 15px;
+      border-radius: 15px;
+      font-weight: bold;
+      color: var(--bee-dark);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+    }
+    
+    .screenshot-title::before {
+      content: "📸";
+      margin-right: 5px;
+    }
+    
+    /* Voice control specific styles */
+    .voice-control {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .voice-button, .voice-toggle-btn, .tts-toggle-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--bee-yellow);
+      border: 3px solid var(--bee-honey);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .voice-button:hover, .voice-toggle-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .voice-button:active, .voice-toggle-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .voice-toggle-btn.listening {
+      animation: pulse 1.5s infinite;
+      background-color: var(--bee-red);
+      border-color: var(--bee-red);
+    }
+    
+    .voice-toggle-btn::before {
+      content: "🎤";
+      font-size: 24px;
+    }
+    
+    .voice-toggle-btn.listening::before {
+      content: "🔴";
+    }
+    
+    .voice-status {
+      font-weight: bold;
+      color: var(--bee-dark);
+      background-color: var(--bee-light);
+      padding: 8px 15px;
+      border-radius: 20px;
+      border: 2px solid var(--bee-honey);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tts-status {
+      font-weight: bold;
+      color: var(--bee-dark);
+      background-color: var(--bee-light);
+      padding: 8px 15px;
+      border-radius: 20px;
+      border: 2px solid var(--bee-honey);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 15px rgba(244, 67, 54, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+      }
+    }
+    
+    @keyframes honeycomb-pulse {
+      0% {
+        transform: scale(0.9);
+        opacity: 0.7;
+      }
+      50% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0.9);
+        opacity: 0.7;
+      }
+    }
+    
+    .loading-honeycomb {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background-color: var(--bee-honey);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      animation: honeycomb-pulse 1.5s infinite;
+      margin-right: 10px;
+    }
+
+        /* Add these to existing styles */
+    .container {
+      overflow-x: hidden; /* Prevent horizontal scroll on container */
+    }
+
+    .hexagon-container {
+      min-width: 0; /* Allow flex items to shrink */
+      overflow-wrap: break-word; /* Break long words */
+    }
+
+    .task-analysis-content pre,
+    .memory-content pre {
+      white-space: pre-wrap; /* Wrap preformatted text */
+      word-wrap: break-word; /* Legacy for older browsers */
+      max-width: 100%; /* Contain within parent */
+    }
+
+    .message {
+      max-width: 90%; /* Prevent messages from being too wide */
+    }
+
+    .controls {
+      min-width: 0; /* Allow flex container to shrink */
+    }
+
+    .hexagon-container {
+      /* Existing styles */
+      max-width: 100%; /* Change from 100vw to 100% */
+    }
+
+    .task-analysis-content, .memory-content {
+      /* Add to existing */
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .controls input {
+      /* Add to existing */
+      max-width: 400px;
+    }
+
+    /* Add new media query */
+    @media (max-width: 480px) {
+      .message {
+        max-width: 85%;
+        font-size: 0.9em;
+      }
+      
+      .controls button {
+        padding: 10px 15px;
+        font-size: 14px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .header {
+        padding: 15px;
+      }
+      
+      h1 {
+        font-size: 2em;
+      }
+      
+      .two-column {
+        flex-direction: column;
+      }
+      
+      .column {
+        max-width: 100%;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .controls input {
+        width: 100%;
+      }
+      
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Botbia Web Interface</h1>
+      <div class="status" id="status">
+        <span class="loading-honeycomb"></span>
+        Connecting to Botbia...
+      </div>
+    </div>
+    
+    <div class="two-column">
+      <div class="column"> 
+        <div class="hexagon-container">
+          <div class="hexagon-title memory-title">Agent Memory</div>
+          <details open>
+            <summary>Toggle Memory View</summary>
+            <pre id="memoryContent" class="memory-content">
+              <em>Loading memory...</em>
+            </pre>
+          </details>
+        </div>
+      </div>
+      
+      <div class="column">
+        <div class="hexagon-container">
+          <div class="hexagon-title">Most Recent Botbia Glimpse</div>
+          <div class="screenshot-container">
+            <div class="screenshot-title">Bot's View</div>
+            <img id="debugScreenshot" class="screenshot" src="debug_screenshot.png" alt="Glimpse Screenshot" />
+          </div>
+        </div>
+      </div>
+      
+      <div class="column">
+        <div class="hexagon-container">
+          <div class="hexagon-title task-analysis-title">Botbia's Thinking</div>
+          <div class="task-analysis-content" id="taskAnalysisContent">
+            <em>Task analysis will appear here when you send a command...</em>
+          </div>
+        </div>
+
+        <div class="hexagon-container">
+          <div class="chat-title">Botbia Chat</div>
+          <div class="chat-container" id="chatContainer">
+            <div class="message bot-message">
+              Buzz! I'm Botbia, your AI browser assistant. How can I help you today?
+            </div>
+          </div>
+          
+          <div class="controls">
+            <input type="text" id="commandInput" placeholder="Tell Botbia what to do..." autocomplete="off">
+            <button id="sendButton">Send</button>
+          </div>
+          
+          <!-- Voice Control Section -->
+          <div class="voice-control">
+            <div class="voice-toggle-btn" id="voiceToggleButton"></div>
+            <button class="tts-toggle-btn" id="ttsToggleButton">TTS Off</button>
+          </div>
+          <div class="voice-status" id="voiceStatus">Voice recognition on</div>
+          <div class="tts-status" id="ttsStatus">Bot is silent</div>
+        </div>
+        
+        <div class="hexagon-container">
+          <div class="hexagon-title commands-title">Bot Commands</div>
+          <ul>
+            <li><strong>list tabs</strong> – List all open tabs</li>
+            <li><strong>switch to tab [number]</strong> – Switch to a specific tab</li>
+            <li><strong>friend</strong> – Engage in friendly conversation, this is where Botbia learns about you</li>
+            <li><strong>analyze</strong> – Have Botbia scan the screen and talk to you</li>
+            <li><strong>click</strong> – Attempt to click an element</li>
+            <li><strong>search</strong> – Perform a search</li>
+            <li><strong>input</strong> – Enter text into a field</li>
+            <li><strong>Explore autonomously [iterations] [about what?] </strong>- Have the bot perform autonomous exploration and report back on findings</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}`;
+    let socket;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    
+    // Speech recognition variables
+    const speechSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+    let recognition;
+    let isListening = false;
+    let voiceEnabled = true;
+    let ttsEnabled = false;
+    let awaitingResponse = false;
+    
+    function initSpeechRecognition() {
+      if (!speechSupported) {
+        document.getElementById('voiceStatus').textContent = "Speech recognition not supported";
+        document.getElementById('voiceToggleButton').style.opacity = "0.5";
+        document.getElementById('voiceToggleButton').style.cursor = "not-allowed";
+        return;
+      }
+      
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = function() {
+        isListening = true;
+        document.getElementById('voiceToggleButton').classList.add('listening');
+        document.getElementById('voiceStatus').textContent = "Listening...";
+      };
+      
+      recognition.onresult = function(event) {
+        if (awaitingResponse) {
+          console.log("Voice command received but awaiting response; ignoring.");
+          return;
+        }
+        const transcript = event.results[event.results.length - 1][0].transcript.trim();
+        console.log("Heard:", transcript);
+        document.getElementById('commandInput').value = transcript;
+        awaitingResponse = true;
+        sendCommand();
+      };
+      
+      recognition.onerror = function(event) {
+        console.error("Speech recognition error:", event.error);
+        document.getElementById('voiceStatus').textContent = `Error: ${event.error}`;
+        document.getElementById('voiceToggleButton').classList.remove('listening');
+        isListening = false;
+      };
+      
+      recognition.onend = function() {
+        isListening = false;
+        document.getElementById('voiceToggleButton').classList.remove('listening');
+        if (voiceEnabled) {
+          console.log("Speech recognition ended, restarting...");
+          recognition.start();
+        } else {
+          document.getElementById('voiceStatus').textContent = "Voice recognition off";
+        }
+      };
+      
+      recognition.start();
+    }
+    
+    function toggleVoiceRecognition() {
+      voiceEnabled = !voiceEnabled;
+      if (voiceEnabled) {
+        recognition.start();
+        document.getElementById('voiceStatus').textContent = "Listening...";
+      } else {
+        recognition.stop();
+        document.getElementById('voiceStatus').textContent = "Voice recognition off";
+      }
+      document.getElementById('voiceToggleButton').textContent = voiceEnabled ? "" : "";
+    }
+    
+    function toggleTTS() {
+      ttsEnabled = !ttsEnabled;
+      document.getElementById('ttsToggleButton').textContent = ttsEnabled ? "TTS On" : "TTS Off";
+      document.getElementById('ttsStatus').textContent = ttsEnabled ? "Bot will speak responses" : "Bot is silent";
+    }
+    
+    function connectWebSocket() {
+      socket = new WebSocket(wsUrl);
+      
+      socket.onopen = function() {
+        document.getElementById('status').innerHTML = '<span class="success-indicator"></span> Connected to Botbia';
+        reconnectAttempts = 0;
+        updateMemoryDisplay();
+      };
+      
+      socket.onclose = function() {
+        document.getElementById('status').innerHTML = '<span class="error-indicator"></span> Disconnected from Botbia';
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          document.getElementById('status').innerHTML = `<span class="loading-honeycomb"></span> Connection lost. Reconnecting (${reconnectAttempts}/${maxReconnectAttempts})...`;
+          setTimeout(connectWebSocket, 3000);
+        } else {
+          document.getElementById('status').innerHTML = '<span class="error-indicator"></span> Failed to connect after multiple attempts. Please refresh the page.';
+        }
+      };
+      
+      socket.onerror = function(error) {
+        console.error('WebSocket error:', error);
+      };
+      
+      socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        switch(data.type) {
+          case 'status':
+            document.getElementById('status').innerHTML = 
+              data.connected ? '<span class="success-indicator"></span> Connected to browser' : '<span class="error-indicator"></span> Browser not connected';
+            break;
+            
+          case 'response':
+            addMessage(data.text, 'bot');
+            awaitingResponse = false;
+            if (voiceEnabled && !isListening) {
+              recognition.start();
+            }
+            break;
+            
+          case 'error':
+            addMessage(`Error: ${data.message}`, 'bot');
+            break;
+          
+          case 'task_analysis':
+            displayTaskAnalysis(data.data);
+            break;
+        }
+      };
+    }
+    
+    function updateMemoryDisplay() {
+      fetch('agent_memory.json')
+        .then(response => response.ok ? response.json() : Promise.reject('Failed to load memory'))
+        .then(memoryData => {
+          document.getElementById('memoryContent').textContent = JSON.stringify(memoryData, null, 2);
+        })
+        .catch(err => {
+          document.getElementById('memoryContent').textContent = 'Error loading memory: ' + err;
+        });
+    }
+    
+    function displayTaskAnalysis(analysisData) {
+      const taskAnalysisElement = document.getElementById('taskAnalysisContent');
+      const formattedJson = JSON.stringify(analysisData, null, 2);
+      taskAnalysisElement.innerHTML = `<pre>${formattedJson}</pre>`;
+    }
+    
+    function sendCommand() {
+      const commandInput = document.getElementById('commandInput');
+      const command = commandInput.value.trim();
+      
+      if (command && socket && socket.readyState === WebSocket.OPEN) {
+        addMessage(command, 'user');
+        document.getElementById('taskAnalysisContent').innerHTML = '<em>Analyzing your request...</em>';
+        socket.send(JSON.stringify({ text: command }));
+        commandInput.value = '';
+      }
+    }
+    
+    function addMessage(text, sender) {
+      const chatContainer = document.getElementById('chatContainer');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender === 'user' ? 'user-message' : 'bot-message'}`;
+      const formattedText = text.replace(/\n/g, '<br>');
+      messageDiv.innerHTML = formattedText;
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      
+      if (sender === 'bot' && ttsEnabled) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        speechSynthesis.speak(utterance);
+      }
+    }
+    
+    document.getElementById('sendButton').addEventListener('click', sendCommand);
+    
+    document.getElementById('commandInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') sendCommand();
+    });
+    
+    document.getElementById('voiceToggleButton').addEventListener('click', toggleVoiceRecognition);
+    document.getElementById('ttsToggleButton').addEventListener('click', toggleTTS);
+    
+    window.addEventListener('load', () => {
+      connectWebSocket();
+      updateMemoryDisplay();
+      initSpeechRecognition();
+    });
+    
+    setInterval(updateMemoryDisplay, 20000);
+    
+    setInterval(() => {
+      const img = document.getElementById('debugScreenshot');
+      img.src = 'debug_screenshot.png?t=' + new Date().getTime();
+    }, 10000);
+  </script>
+</body>
+</html>

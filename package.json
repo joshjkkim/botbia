@@ -1,0 +1,27 @@
+{
+  "name": "botbia",
+  "version": "1.0.0",
+  "description": "AI-powered browser assistant",
+  "main": "server.js",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "nodemon server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "fs-extra": "^11.1.1",
+    "dotenv": "^16.4.7",
+    "openai": "^3.2.1",
+    "opener": "^1.5.2",
+    "puppeteer": "^24.4.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "ws": "^8.13.0"
+    
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
