@@ -38,6 +38,18 @@ Botbia is an AI-powered browser assistant that helps you automate browser tasks 
    - Click OK to save the changes
    - Use this shortcut to open Chrome whenever you want to use Botbia
 
+taskkill /IM chrome.exe /F
+
+Start-Process "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" `
+  -ArgumentList "--remote-debugging-port=9222"
+
+   OR: Powerwhell:
+   - Start-Process `
+      -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" `
+      -ArgumentList @(
+        "--remote-debugging-port=9222"
+    )
+
    OR: For MAC:
    - Write: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222"
    - Into your terminal and enter, MAKE SURE ALL OTHER TABS ARE CLOSED.

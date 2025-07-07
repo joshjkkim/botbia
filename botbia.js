@@ -1,15 +1,16 @@
+require('dotenv').config();
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-const { Configuration, OpenAIApi } = require('openai');
+const { OpenAI } = require('openai');
 const fs = require('fs/promises');
 const fsPromises = require('fs')
 const path = require('path');
+const fetch = require('node-fetch');
 
 // Initialize AI client
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 const time = 1000;
 
@@ -36,11 +37,11 @@ class BotbiaAgent {
       // Try to connect to an existing Chrome instance
       // You need to start Chrome with remote debugging enabled:
       // chrome.exe --remote-debugging-port=9222
+      const meta  = await (await fetch('http://127.0.0.1:9222/json/version')).json();
       this.browser = await puppeteer.connect({
-        browserURL: 'http://localhost:9222',
+        browserWSEndpoint: meta.webSocketDebuggerUrl,
         defaultViewport: null
       });
-      
       console.log("Successfully connected to existing Chrome browser");
       
       // Get all pages and select the active one
@@ -192,7 +193,12 @@ async processCommand(userInput) {
     
     // Step 2: Execute the understood task
     const result = await this.executeTask(taskAnalysis, userInput);
-    
+
+    if(taskAnalysis.intent === 'friend') {
+      // If the intent is 'friend', we don't need to generate a response
+      return result;
+    }
+
     // Step 3: Generate response to user
     return await this.generateResponse(result, taskAnalysis);
   } catch (error) {
@@ -243,16 +249,16 @@ async processCommand(userInput) {
     `;
     await sleep(time);
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [{ role: "assistant", content: prompt }],
       temperature: 0.2,
       response_format: { type: "json_object" }
     });
   
     try {
       // Parse the JSON response
-      const responseText = response.data.choices[0].message.content;
+      const responseText = response.choices[0].message.content;
       let parsedResponse;
       
       // Try to extract JSON if full response isn't JSON
@@ -415,13 +421,13 @@ async processCommand(userInput) {
 
     await sleep(time);
     
-    const selectorResponse = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const selectorResponse = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
       messages: [{ role: "user", content: searchSelectorPrompt }],
       temperature: 0.2,
     });
     
-    const searchSelector = selectorResponse.data.choices[0].message.content.trim().replace(/^"|"$/g, '');
+    const searchSelector = selectorResponse.choices[0].message.content.trim().replace(/^"|"$/g, '');
     
     // Try the AI-suggested selector, with fallbacks
     try {
@@ -477,8 +483,8 @@ async processCommand(userInput) {
     // Build a plain object in case of any non-enumerable properties
     const plainContext = JSON.parse(JSON.stringify(pageContext));
   
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini", // or any model you prefer for conversation
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini", // or any model you prefer for conversation
       messages: [
         { role: "system", content: `You are a friendly conversational assistant that can analyze images. \n Here is a description of your most recent actions: "${JSON.stringify(recentActions)}` },
         { role: "user", content: [
@@ -493,7 +499,7 @@ async processCommand(userInput) {
       ],
       temperature: 0.7,
     });
-    return response.data.choices[0].message.content;
+    return response.choices[0].message.content;
   }
 
   async friend(userInput, recentActions) {
@@ -501,17 +507,31 @@ async processCommand(userInput) {
   // (Using the 'friend:friend' key, which you can adjust as needed.)
   const friendMemory = await this.getAiSelectorMemory('friend:friend');
 
+   const descriptions = (friendMemory?.examples || [])
+    .map(e => e.interaction.details.description);
+
+  // Build a single string summary (one fact per line)
+  const friendMemorySummary = descriptions.length
+    ? descriptions.join("\n")
+    : "No prior memory.";
+
   // Build the prompt with a very explicit instruction.
-  const prompt = `${userInput}\n` +
-    `If the message contains **ONLY** the **MOST** important information about the user and their life, include the exact word "!Remember" anywhere in your response. ` +
-    `You should **NOT** include "!Remember" for casual conversation, only new and important information in the user's life. Be strict.` +
-    `Here is a description of your most recent actions: "${JSON.stringify(recentActions)}"` +
-    `Important Memory About User **THIS HAS ALREADY BEEN SAVED DO NOT RESAVE BASED ON THE FOLLOWING**: ${JSON.stringify(friendMemory)}`;
+const prompt = `${userInput}
+
+// ONLY if the user gives a specific, lasting fact about themselves  
+// (name, birthday, hometown, long-term preference, project goal, etc.),  
+// reply with exactly “!Remember” in your response.  
+// Do NOT use “!Remember” for general chit-chat, feelings, or follow-ups.
+
+// Recent actions: ${JSON.stringify(recentActions)}
+// Existing memory summary: ${JSON.stringify(friendMemorySummary)}
+`;
+
 
   console.log("Friend prompt:", prompt);
 
-  const completion = await openai.createChatCompletion({
-    model: "gpt-4o-mini", // Adjust model as needed
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4.1-mini", // Adjust model as needed
     messages: [
       { 
         role: "system", 
@@ -523,7 +543,7 @@ async processCommand(userInput) {
     max_tokens: 300,
   });
 
-  const friendResponse = completion.data.choices[0].message.content;
+  const friendResponse = completion.choices[0].message.content;
 
   console.log(friendResponse)
   const important = friendResponse.includes("!Remember");
@@ -571,12 +591,12 @@ async processCommand(userInput) {
       console.log(inputSelectorPrompt)
       await sleep(time);
 
-      const selectorResponse = await openai.createChatCompletion({
-        model: "gpt-4o-mini",
+      const selectorResponse = await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
         messages: [{ role: "user", content: inputSelectorPrompt }],
         temperature: 0.2,
       });
-      aiSelector = selectorResponse.data.choices[0].message.content.replace(/```(css)?\n?|\n?```/g, '').trim();
+      aiSelector = selectorResponse.choices[0].message.content.replace(/```(css)?\n?|\n?```/g, '').trim();
 
       await this.activePage.waitForSelector(aiSelector, { timeout: 10000, visible: true });
       const elementHandle = await this.activePage.$(aiSelector);
@@ -731,13 +751,13 @@ async processCommand(userInput) {
 
       console.log(clickSelectorPrompt)
   
-      const selectorResponse = await openai.createChatCompletion({
-        model: "gpt-4o-mini",
+      const selectorResponse = await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
         messages: [{ role: "user", content: clickSelectorPrompt }],
         temperature: 0.2,
       });
 
-      aiSelector = selectorResponse.data.choices[0].message.content.replace(/```(css)?\n?|\n?```/g, '').trim();
+      aiSelector = selectorResponse.choices[0].message.content.replace(/```(css)?\n?|\n?```/g, '').trim();
 
       console.log(aiSelector)
       await this.activePage.waitForSelector(aiSelector, { timeout: 5000 });
@@ -837,13 +857,13 @@ async processCommand(userInput) {
 
     await sleep(time);
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
     });
     
-    const message = response.data.choices[0].message.content;
+    const message = response.choices[0].message.content;
     this.updateMemory({ type: 'response', content: message });
     return message;
   }
@@ -857,13 +877,13 @@ async processCommand(userInput) {
 
     await sleep(time);
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
     });
     
-    const message = response.data.choices[0].message.content;
+    const message = response.choices[0].message.content;
     console.log(message)
     return message;
   }
@@ -896,58 +916,97 @@ async processCommand(userInput) {
   }
   
   async learnFromInteraction(interaction, success) {
-    // Create a composite key that includes intent and method.
-    const interactionKey = `${interaction.intent}:${interaction.method || 'general'}`;
-    const memoryPath = path.join(__dirname, 'agent_memory.json');
-  
-    // Load existing persistent memory from file
-    let persistentMemory = { interactions: {} };
-    try {
-      const data = await fs.readFile(memoryPath, 'utf8');
-      persistentMemory = JSON.parse(data);
-      if (!persistentMemory.interactions) {
-        persistentMemory.interactions = {};
-      }
-    } catch (err) {
-      console.log("No existing memory file found, starting fresh.");
-    }
-    
-    // Get the existing record for this key or initialize it
-    let record = persistentMemory.interactions[interactionKey] || { successes: 0, failures: 0, examples: [] };
-    
-    // Update the counters
-    if (success) {
-      record.successes = (record.successes || 0) + 1;
-    } else {
-      record.failures = (record.failures || 0) + 1;
-    }
-    
-    // Prepend the new interaction details
-    record.examples.unshift({
-      interaction,
-      success,
-      timestamp: new Date().toISOString()
-    });
-    
-    // Limit the number of stored examples (e.g., keep only the 5 most recent)
-    if (record.examples.length > 5) {
-      record.examples = record.examples.slice(0, 5);
-    }
-    
-    // Save the updated record back into the persistent memory
-    persistentMemory.interactions[interactionKey] = record;
-    
-    // Write the updated memory back to file
-    try {
-      await fs.writeFile(memoryPath, JSON.stringify(persistentMemory, null, 2), 'utf8');
-      console.log("Memory saved successfully.");
-    } catch (error) {
-      console.error("Error saving memory:", error);
-    }
-    
-    // Optionally, update the in-memory memory too
-    this.memory.longTerm.interactions = persistentMemory.interactions;
+  // Composite key = intent:method
+  const interactionKey = `${interaction.intent}:${interaction.method || 'general'}`;
+  const memoryPath = path.join(__dirname, 'agent_memory.json');
+
+  // Load existing memory
+  let persistentMemory = { interactions: {} };
+  try {
+    const data = await fs.readFile(memoryPath, 'utf8');
+    persistentMemory = JSON.parse(data);
+    persistentMemory.interactions ||= {};
+  } catch {
+    console.log("No existing memory file found, starting fresh.");
   }
+
+  // Initialize or fetch this bucket
+  let record = persistentMemory.interactions[interactionKey] || {
+    successes: 0,
+    failures: 0,
+    examples: []
+  };
+
+  // Update counters
+  if (success) record.successes = (record.successes || 0) + 1;
+  else record.failures = (record.failures || 0) + 1;
+
+  // Add newest interaction to front
+  record.examples.unshift({
+    interaction,
+    success,
+    timestamp: new Date().toISOString()
+  });
+
+  // If it’s a “friend” interaction, summarize after 10 entries
+  if (interaction.intent === 'friend') {
+    const THRESHOLD = 10;
+    if (record.examples.length > THRESHOLD) {
+      // Pull the last THRESHOLD facts
+      const facts = record.examples
+        .slice(0, THRESHOLD)
+        .map(e => e.interaction.details.description);
+
+      // Ask the model to condense them
+      const summaryResp = await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a memory-compression assistant. " +
+              "Condense these user facts into 3–5 concise bullet points."
+          },
+          { role: "user", content: facts.join("\n") }
+        ],
+        temperature: 0.5,
+        max_tokens: 150
+      });
+      const summaryText = summaryResp.choices[0].message.content.trim();
+
+      // Replace examples with a single summary entry
+      record.examples = [{
+        interaction: {
+          intent: 'friend',
+          method: 'summary',
+          details: { description: summaryText }
+        },
+        success: true,
+        timestamp: new Date().toISOString()
+      }];
+    }
+
+  } else {
+    // For other intents, just cap at 5 examples
+    const MAX_OTHER = 5;
+    if (record.examples.length > MAX_OTHER) {
+      record.examples = record.examples.slice(0, MAX_OTHER);
+    }
+  }
+
+  // Persist the updated bucket
+  persistentMemory.interactions[interactionKey] = record;
+  try {
+    await fs.writeFile(memoryPath, JSON.stringify(persistentMemory, null, 2), 'utf8');
+    console.log("Memory saved successfully.");
+  } catch (err) {
+    console.error("Error saving memory:", err);
+  }
+
+  // (Optional) sync into your in-memory store
+  this.memory.longTerm.interactions = persistentMemory.interactions;
+}
+
   
   
   async saveMemory() {
@@ -1148,15 +1207,15 @@ async processCommand(userInput) {
     
     await sleep(1000);
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.4,
       response_format: { type: "json_object" }
     });
     
     try {
-      return JSON.parse(response.data.choices[0].message.content);
+      return JSON.parse(response.choices[0].message.content);
     } catch (error) {
       console.error("Failed to parse inferred context:", error);
       return { 
@@ -1212,8 +1271,8 @@ async processCommand(userInput) {
     
     await sleep(1000);
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
       messages: [
         { 
           role: "system", 
@@ -1226,7 +1285,7 @@ async processCommand(userInput) {
     });
     
     try {
-      const decision = JSON.parse(response.data.choices[0].message.content);
+      const decision = JSON.parse(response.choices[0].message.content);
       console.log("Autonomous decision:", decision);
       return decision;
     } catch (error) {
@@ -1251,7 +1310,7 @@ async processCommand(userInput) {
         intent: action.intent,
         target: action.target,
         elements: action.elements,
-        data: action.data,
+        data: action,
         expectedOutcome: action.reasoning,
         fallbackStrategies: ["analyze current page", "navigate to related content"]
       };
@@ -1331,8 +1390,8 @@ async processCommand(userInput) {
     
     await sleep(1000);
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
@@ -1345,7 +1404,7 @@ async processCommand(userInput) {
     });
     
     try {
-      const analysis = JSON.parse(response.data.choices[0].message.content);
+      const analysis = JSON.parse(response.choices[0].message.content);
       console.log("Action analysis:", analysis);
       
       // Add the analysis to discoveries
@@ -1399,14 +1458,14 @@ async processCommand(userInput) {
     
     await sleep(1000);
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
       max_tokens: 350
     });
     
-    const summary = response.data.choices[0].message.content;
+    const summary = response.choices[0].message.content;
     
     // Add the summary to the agent's memory
     this.updateMemory({

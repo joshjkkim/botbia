@@ -686,16 +686,16 @@
     let ttsEnabled = false;
     let awaitingResponse = false;
     
+    window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     function initSpeechRecognition() {
-      if (!speechSupported) {
+      if (!window.SpeechRecognition) {
         document.getElementById('voiceStatus').textContent = "Speech recognition not supported";
         document.getElementById('voiceToggleButton').style.opacity = "0.5";
         document.getElementById('voiceToggleButton').style.cursor = "not-allowed";
         return;
       }
       
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
+      recognition = new window.SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
